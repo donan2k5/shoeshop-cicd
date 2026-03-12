@@ -1,0 +1,43 @@
+variables:
+  DOCKER_IMAGE: ${REGISTRY_URL}/${REGISTRY_PROJECT}/shoeshop:v1
+
+stages:
+  - buildandpush
+  - deploy
+  - checklog
+
+buildandpush:
+  stage: buildandpush
+  variables:
+    GIT_STRATEGY: clone
+  before_script:
+    - docker login ${REGISTRY_URL} -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD}
+  script:
+    - docker build -t $DOCKER_IMAGE .
+    - docker push $DOCKER_IMAGE
+  tags:
+    - gitlab-server
+
+deploy:
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - chmod 400 ${KEY_PAIR}
+    - scp -i ${KEY_PAIR} docker-compose.yml ec2-user@${EC2_IP}:/home/ec2-user/
+    - ssh -T -o StrictHostKeyChecking=no -i ${KEY_PAIR} ec2-user@${EC2_IP} "docker login ${REGISTRY_URL} -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD} && export REGISTRY_URL=${REGISTRY_URL} && export REGISTRY_PROJECT=${REGISTRY_PROJECT} && export SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL} && export SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME} && export SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD} && cd /home/ec2-user && docker-compose pull && docker-compose up -d"
+  tags:
+    - gitlab-server
+
+checklog:
+  stage: checklog
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - sleep 20
+    - chmod 400 ${KEY_PAIR}
+    - ssh -T -o StrictHostKeyChecking=no -i ${KEY_PAIR} ec2-user@${EC2_IP} "docker compose logs shoeshop"
+  tags:
+    - gitlab-server
+  only:
+    - tags
