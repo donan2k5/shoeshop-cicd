@@ -1,5 +1,5 @@
 ## 🏗 System Architecture & CI/CD Flow
 
-![CI/CD Flow AWS](./ci-cd-flow-aws.drawio.svg)
+![CI/CD Flow AWS](./cicd-work-flow.png)
 
 *Click on the diagram to see it in full resolution.*
