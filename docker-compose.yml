@@ -7,13 +7,7 @@ services:
     container_name: shoeshop
     ports:
       - "8088:8088"
-    networks:
-      - shoeshop-network
     environment:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-
-networks:
-  shoeshop-network:
-    external: true
